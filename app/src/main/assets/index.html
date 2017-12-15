@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>设备列表</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="jquery-confirm/jquery-confirm.min.css" rel="stylesheet">
+    <link href="swiper/css/swiper.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            position: relative;
+            height: 100%;
+        }
+
+        body {
+            /*background: #eee;*/
+            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            /*color: #000;*/
+            margin: 0;
+            padding: 0;
+            padding-top: 70px;
+        }
+
+        input[type=checkbox] {
+            width: 20px;
+            height: 20px;
+            margin: 0px;
+        }
+
+        .swiper-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff;
+
+            /* Center slide text vertically */
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .cmdlist {
+            width: 100%;
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            border-color: #bce8f1;
+            margin-bottom: 0px;
+            background-color: #fff;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+        }
+
+        .terminallist {
+            height: 100%;
+            /* overflow: -webkit-paged-y; */
+            overflow-y: scroll;
+        }
+
+        .cmdbutton {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top nav-justified" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" id="collapse" data-target="#example-navbar-collapse">
+                    <span class="sr-only">切换导航</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand col-md-6 col-md-offset-3" href="#" id="headtitle" data-localize="indexlang.loading">正在读取设备列表...</a>
+            </div>
+            <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="#" onclick="navClick(1,'状态监控')" data-localize="indexlang.menuStatus">状态监控</a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="navClick(2,'设备管理')" data-localize="indexlang.terminalManager">设备管理</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <span data-localize="indexlang.appSetting">应用设置</span>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="#"> </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="navClick(3,'报警设置')" data-localize="indexlang.warnset">报警设置</a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="navClick(4,'监控报警')" data-localize="indexlang.monitorset">监控报警</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#" onclick="navClick(5,'网络配置')" data-localize="indexlang.wifiset">网络配置</a>
+                            </li>
+
+                        </ul>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" onclick="navClick(6,'设备使用说明')" data-localize="indexlang.guid">设备使用说明</a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="chgLang()" data-language="en" id="btnchangelanguage">English</a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="navClick(7,'关于')" data-localize="indexlang.about">关于</a>
+                    </li>
+                    <li>
+                        <a href="#" data-localize="indexlang.logout">登出</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="swiper-container divonepage divonepage1">
+        <div class="swiper-wrapper" id="maincontainer">
+
+        </div>
+        <!-- 如果需要分页器 -->
+        <div class="swiper-pagination"></div>
+
+        <!-- 如果需要导航按钮 -->
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+
+        <!-- 如果需要滚动条 -->
+        <div class="swiper-scrollbar"></div>
+    </div>
+
+    <div class="container-fluid swiper-slide" id="t_temp" style="display:none">
+        <!-- <div class="page-header">
+            <h1>类型名称
+            </h1>
+        </div> -->
+        <div class="terminallist">
+
+        </div>
+
+        <div class="panel panel-info cmdlist">
+            <div class="panel-heading" onclick="cmdtitleclick()">
+                <h3 class="panel-title" data-localize="indexlang.control">操作
+                </h3>
+            </div>
+            <div class="panel-body">
+                <button type="button" class="btn btn-link btn-xs btn-block extbuttonspan">
+                    <span class="glyphicon glyphicon-option-horizontal " aria-hidden="true"></span>
+                </button>
+
+                <div class="extbutton" style="display:none">
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-success terminal" id="t_t_temp" style="display:none">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <span class="tname">设备名称</span>&nbsp;-&nbsp;
+                <span class="tstatus">--</span>
+                <input type="checkbox" style="float:right;" />
+            </h3>
+        </div>
+        <div class="panel-body">
+        </div>
+    </div>
+
+    <div class="container divonepage divonepage2" style="display:none">
+        <div class="container-fluid">
+            <div class="panel panel-info">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <td>序号</td>
+                            <td>名称</td>
+                            <td>类型</td>
+                            <td>操作</td>
+                        </tr>
+                    </thead>
+                    <tbody id="tableterminallist"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="page-header">
+                <h1>添加/修改设备
+                </h1>
+            </div>
+            <div class="panel panel-info " id="terminalinfoform">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">设备类型</span>
+                            <div class="input-group-btn">
+                                <button id="configbtn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">1
+                                    <span class="caret"></span>
+                                </button>
+                                <ul id="configselect" class="dropdown-menu dropdown-menu-right">
+
+                                </ul>
+                            </div>
+                            <!-- /btn-group -->
+                        </div>
+                        <!-- /input-group -->
+                        <br/>
+                        <div class="input-group">
+                            <input id="terminal_id_update" type="text" style="display:none">
+                            <span class="input-group-addon" id="basic-addon1">名称</span>
+                            <input id="tname" type="text" class="form-control" placeholder="名称" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">SN</span>
+                            <input id="sn" type="text" class="form-control" placeholder="SN" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+
+                        <button type="button" class="btn btn-primary btn-lg btn-block" id="add_terminal_btn" onclick="addTerminal()">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container divonepage divonepage3" style="display:none">
+        <p>施工中</p>
+    </div>
+
+    <div class="container divonepage divonepage4" style="display:none">
+        <p>施工中</p>
+    </div>
+
+    <div class="container divonepage divonepage5" style="display:none" id="configTerminalWifi">
+        <div class="container-fluid">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">路由器名称</span>
+                            <input id="ssid" type="text" class="form-control" aria-describedby="basic-addon1" readonly="readonly">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">路由器密码</span>
+                            <input id="wifipassword" type="text" class="form-control" placeholder="password" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">任务数</span>
+                            <input id="taskcount" type="text" class="form-control" aria-label="..." readonly="readonly" value="1">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">1
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right" id="taskcountlist">
+                                    <li>
+                                        <a href="#">1</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">2</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">3</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">4</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">5</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- /btn-group -->
+                        </div>
+                        <!-- /input-group -->
+                        <br/>
+                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="setTerminal()">开始配置</button>
+                    </div>
+                    <h3>使用说明：</h3>
+                    <ol>
+                        <li>确保手机连入wifi</li>
+                        <li>按住设备上的</li>
+                        <li>按住控制器“+”键后接通控制器电源，至通信收发指示快速闪烁后松开。</li>
+                        <li>点击“开始配置”按钮。等待配置成功。</li>
+
+
+                    </ol>
+                    <p> 配置时间长短根据WIFI信号的强弱和启动配置的时机，会有不同，如配置失败，重新在APP中点“开始配置”按钮。</p>
+                    <h4>指示灯状态</h4>
+                    <p>
+
+                        WIFI连接成功，WIFI连接指示灯亮，否则灭。</p>
+                    <p>云服务连接成功，云端连接指示灯亮，否则灭。</p>
+                    <p>WIFI有数据收发时，通信收发指示灯闪烁。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container divonepage divonepage6" style="display:none">
+        <h3>1.延时启动功能</h3>
+        <p>1.1 控制器通电后数码管显示延时启动剩余秒数。</p>
+        <p>1.2 在显示倒计时的过程中，按“E”或“M”键立即中断倒计时，开始启动。</p>
+        <p>1.3 延时时间设置，在数码管显示倒计时的过程中按“+”“-”键，进入延时时间设置，数码管闪烁显示当前延时启动时间，按“+”“-”键调整延时时间，有3、60、120三种时间可选。按“M”键保存设置，按“E”键退出设置状态。</p>
+        <h3>2.匀速模式和造浪模式</h3>
+        <p>2.1启动成功后，数码显示FXX（XX表示档位），表示当前为匀速模式，显示LXX（XX表示档位），表示为造浪模式，按“+”“-”调整匀速速度或造浪周期，共16档。</p>
+        <p>2.2按“M”键切换造浪和匀速模式。</p>
+        <p>2.3造浪高低速运行时间间隔 =（0.3 + 档位X 0.2）秒。</p>
+        <h3>3.喂食模式</h3>
+        <p>3.1喂食模式：水泵以最低档运行15分钟，再恢复到进入喂食模式之前的模式和档位。</p>
+        <p>3.2启动成功后，按“E”键切换至喂食模式，数码显示EXX（XX表示喂食模式剩余的分钟数）。</p>
+        <h3>4.启动和停止</h3>
+        <p>4.1按”O”键，启动或关闭泵。关闭成功后显示“OFF”，启动成功后显示当前的模式和档位。</p>
+        <h3>5.控制器异常及处理</h3>
+        <p>5.1 启动失败：数码管闪烁显示“FXX”或“LXX”，按任何键无反应。断开控制电源，检查电源电压，水泵、电缆、连接插头，再重新上电。</p>
+        <p>5.2 缺水：数码管闪烁显示“P00”，水泵低速运转。重新将水泵置于水中后恢复运行。</p>
+        <p>5.3 堵转：数码管闪烁显示“EXX”、“FXX”或“LXX”， 按任何键无反应。断开控制电源，消除堵转原因后再重新上电。</p>
+        <h3>6.WIFI连接</h3>
+        <p>需准备一台手机，安装好APP，已经接入WIFI。</p>
+        <p>WIFI配置前请先断开水泵电缆。</p>
+        <p>6.1控制器连接WIFI</p>
+        <p>（1）在APP中找到配置新设备页面，确认当前WIFI名称已经正确显示在页面中，如没有，检查手机接入WIFI情况或重启APP，在WIFI密码输入框中输入当前WIFI的密码。</p>
+        <p>（2）按住控制器“+”键后接通控制器电源，至通信收发指示快速闪烁后松开。</p>
+        <p>（3）点击“开始配置”按钮。等待配置成功。</p>
+        <p>配置时间长短根据WIFI信号的强弱和启动配置的时机，会有不同，如配置失败，重新在APP中点“开始配置”按钮。</p>
+        <p>6.2指示灯状态</p>
+        <p>WIFI连接成功，WIFI连接指示灯亮，否则灭。</p>
+        <p>云服务连接成功，云端连接指示灯亮，否则灭。</p>
+        <p>WIFI有数据收发时，通信收发指示灯闪烁。</p>
+
+    </div>
+
+    <div class="container divonepage divonepage7" style="display:none">
+        <h3>感谢选购我们的设备，我们将竭诚为您服务。</h3>
+    </div>
+
+    <script src="jquery/index.language.js"></script>
+    <script src="jquery/js.cookie.js"></script>
+    <script src="jquery/jquery.min.js"></script>
+    <script src="jquery/jquery.localize.js" type="text/javascript" charset="utf-8"></script>
+    <script src="jquery/language.cookie.js" type="text/javascript" charset="utf-8"></script>
+
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="jquery-confirm/jquery-confirm.min.js"></script>
+    <script src="swiper/js/swiper.jquery.min.js"></script>
+
+    <script>
+        var uri = "http://120.77.247.25:8000";
+        var terminalList = [];
+        var configlist = {};
+        Date.prototype.toString = function (format, loc) {
+            var time = {};
+            time.Year = this.getFullYear();
+            time.TYear = ("" + time.Year).substr(2);
+            time.Month = this.getMonth() + 1;
+            time.TMonth = time.Month < 10 ? "0" + time.Month : time.Month;
+            time.Day = this.getDate();
+            time.TDay = time.Day < 10 ? "0" + time.Day : time.Day;
+            time.Hour = this.getHours();
+            time.THour = time.Hour < 10 ? "0" + time.Hour : time.Hour;
+            time.hour = time.Hour < 13 ? time.Hour : time.Hour - 12;
+            time.Thour = time.hour < 10 ? "0" + time.hour : time.hour;
+            time.Minute = this.getMinutes();
+            time.TMinute = time.Minute < 10 ? "0" + time.Minute : time.Minute;
+            time.Second = this.getSeconds();
+            time.TSecond = time.Second < 10 ? "0" + time.Second : time.Second;
+            time.Millisecond = this.getMilliseconds();
+            time.Week = this.getDay();
+
+            var MMMArrEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var MMMArr = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            var WeekArrEn = ["Sun", "Mon", "Tue", "Web", "Thu", "Fri", "Sat"];
+            var WeekArr = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+            var oNumber = time.Millisecond / 1000;
+
+            if (format != undefined && format.replace(/\s/g, "").length > 0) {
+                if (loc != undefined && loc == "en") {
+                    MMMArr = MMMArrEn.slice(0);
+                    WeekArr = WeekArrEn.slice(0);
+                }
+                format = format
+                    .replace(/yyyy/ig, time.Year)
+                    .replace(/yyy/ig, time.Year)
+                    .replace(/yy/ig, time.TYear)
+                    .replace(/y/ig, time.TYear)
+                    .replace(/MMM/g, MMMArr[time.Month - 1])
+                    .replace(/MM/g, time.TMonth)
+                    .replace(/M/g, time.Month)
+                    .replace(/dd/ig, time.TDay)
+                    .replace(/d/ig, time.Day)
+                    .replace(/HH/g, time.THour)
+                    .replace(/H/g, time.Hour)
+                    .replace(/hh/g, time.Thour)
+                    .replace(/h/g, time.hour)
+                    .replace(/mm/g, time.TMinute)
+                    .replace(/m/g, time.Minute)
+                    .replace(/ss/ig, time.TSecond)
+                    .replace(/s/ig, time.Second)
+                    .replace(/fff/ig, time.Millisecond)
+                    .replace(/ff/ig, oNumber.toFixed(2) * 100)
+                    .replace(/f/ig, oNumber.toFixed(1) * 10)
+                    .replace(/EEE/g, WeekArr[time.Week]);
+            }
+            else {
+                format = time.Year + "-" + time.Month + "-" + time.Day + " " + time.Hour + ":" + time.Minute + ":" + time.Second;
+            }
+            return format;
+        }
+
+        function cmdtitleclick() {
+            $(".cmdlist .panel-body").slideToggle("slow");
+        }
+
+        function navClick(index, title) {
+            //console.log(index);
+            $("#headtitle").html(title);
+            $('.divonepage').hide();
+            $('.divonepage' + index).show();
+            $('#collapse').addClass("collapsed");
+            $('#collapse').attr("aria-expanded", false);
+            $("#example-navbar-collapse").removeClass("in");
+            $("#example-navbar-collapse").attr("aria-expanded", false);
+
+        }
+
+        // $(".nav > li > a").click(function () {
+        //     $('#collapse').addClass("collapsed");
+        //     $('#collapse').attr("aria-expanded", false);
+        //     $("#example-navbar-collapse").removeClass("in");
+        //     $("#example-navbar-collapse").attr("aria-expanded", false);
+        // });
+
+        $(function () {
+
+            (function ($) {
+                $.getUrlParam = function (name) {
+                    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                    var r = window.location.search.substr(1).match(reg);
+                    if (r != null) return unescape(r[2]); return null;
+                }
+            })(jQuery);
+
+            var user = $.getUrlParam('user');
+
+            navClick(1);
+
+            var swiper = new Swiper('.swiper-container', {
+                initialSlide: 0,
+                //pagination: '.swiper-pagination',
+                //paginationClickable: true,
+                nextButton: '.swiper-button-next',
+                prevButton: '.swiper-button-prev',
+                observer: true,//修改swiper自己或子元素时，自动初始化swiper
+                observeParents: true,//修改swiper的父元素时，自动初始化swiper
+                onSlideChangeEnd: function (swiper) {
+                    var currentdiv = $(".swiper-slide").eq(swiper.activeIndex);
+                    $("#headtitle").html(currentdiv.data("name"));
+                },
+                onInit: function (swiper) {
+                    console.log(swiper.activeIndex);
+                }
+            });
+
+            $(".cmdlist .panel-heading h3").click(function () {
+                //console.log(1);
+                $(".cmdlist .panel-body").slideToggle("slow");
+            });
+
+            var loadingconfirm = $.confirm({
+                title: '请稍后',
+                // content: function(){
+                //    this.showLoading(true);
+                // },
+                lazyOpen: true,
+                theme: 'supervan' // 'material', 'bootstrap'
+            });
+
+            function cmdbuttonClick() {
+                var $this = $(this);
+                var cid = $this.data("cid");
+                var cmdid = $this.data("cmdid");
+                //var checked=$(document).find("input .check_cid_"+cid);
+                if ($('input[name="check_cid_' + 1 + '"]:checked').length < 1) {
+                    $.alert({
+                        title: '无选中的设备!',
+                        content: '没有设备被选中，无法操作，请先勾选设备！',
+                        confirm: function () {
+                            //$.alert('Confirmed!'); // shorthand.
+                        }
+                    });
+                    return;
+                }
+                loadingconfirm.open();
+                loadingconfirm.showLoading(true);
+                $('input[name="check_cid_' + cid + '"]:checked').each(function () {
+                    $.get(uri + "/m/cmd", { id: $(this).data("tid"), cmd: cmdid }, function (data, status, xhr) {
+                        //$.alert(data.returnMessage);
+                    });
+                });
+                //console.log(checked);
+                // console.log(cid);
+            };
+            $("body").on("click", 'input[type="checkbox"]', function (e) {
+                e.stopPropagation();
+                var parent = $(this).parents(".terminal");
+                if (!$(this).is(':checked')) {
+                    parent.removeClass("panel-primary");
+                    parent.addClass("panel-success");
+                } else {
+                    parent.addClass("panel-primary");
+                    parent.removeClass("panel-success");
+                }
+            });
+            $("body").on("click", '.terminal .panel-heading', function (e) {
+                $(this).find(':checkbox').click();
+            });
+
+            $("body").on("click", '.extbuttonspan', function (e) {
+                $(this).next().toggle('slow');
+            });
+
+
+
+            function realData() {
+                //alert("ready");·
+                $.get(uri + "/m/getrealdata", { uid: user }, function (data, status, xhr) {
+                    if (data.returnCode != 200) {
+                        $.alert(data.returnMessage);
+                    }
+                    $.each(data, function (i, n) {
+                        //console.log(i);
+                        if (i == "returnCode" || i == "returnMessage") {
+                            return;
+                        }
+
+                        var terminaldiv = $("#terminaldiv_" + i);
+                        if (n.data != undefined && n.data.time != undefined) {
+                            var time = terminaldiv.data("time");
+                            if (time != undefined && time != n.data.time) {
+                                if (loadingconfirm.isOpen())
+                                    loadingconfirm.close();
+                            }
+                            terminaldiv.data("time", n.data.time);
+                        }
+
+
+                        if (n.returnCode != 200) {
+                            terminaldiv.find(".tstatus").html(n.returnMessage);
+                        } else {
+                            //console.log(n);
+                            terminaldiv.find(".tstatus").html("在线 (" + new Date(n.data.time).toString() + ")");
+                            var divlist = terminaldiv.find(".panel-body .row .datacoloum");
+                            var ths = n.data.data.split(';');
+                            for (var index = 0; index < divlist.length; index++) {
+                                divlist.eq(index).html(ths[index]);
+                            }
+                        }
+
+
+                    });
+                });
+            }
+
+            $.get(uri + "/m/listserverconfig", function (data, status, xhr) {
+                $("#headtitle").html(data[0].configName);
+
+                $("#tableterminallist").empty();
+
+                $("#configselect").empty();
+                $.each(data, function (i, n) {
+                    var $a = $("<a>");
+                    $a.data("confidId", n.configID);
+                    $a.data("configName", n.configName);
+                    $a.html(n.configName);
+                    $a.attr("href", "javascript:;");
+                    $a.click(hrefclick);
+                    var $li = $('<li>');
+                    $li.append($a);
+                    $li.attr("id", "config_li_" + n.configID);
+                    $("#configselect").append($li);
+                });
+                $("#configbtn").html($("#configselect").find("a").first().data("configName") + ' <span class="caret"></span>');
+                $("#configbtn").data("confidId", $("#configselect").find("a").first().data("confidId"));
+
+                configlist = data;
+                $.each(configlist, function (i, n) {
+                    //$.alert("aa"+n.configID);
+                    var tdiv = $("#t_temp").clone();
+                    tdiv.show();
+                    tdiv.data("name", n.configName);
+                    tdiv.attr("id", "t_list" + n.configID);
+                    //tdiv.find(".page-header h1").html(n.configName);
+                    var ths = n.terminalHPConfig.split(';');
+
+                    // var div=$("<div>");
+                    // div.addClass("swiper-slide");
+                    // div.append(tdiv);
+                    $("#maincontainer").append(tdiv);
+
+                    $.get(uri + "/m/listcmdbtn", { cid: n.configID }, function (data, status, xhr) {
+                        //console.log(data);
+
+                        var cmddiv = tdiv.find(".cmdlist .panel-body");
+                        var cmddivExt = tdiv.find(".cmdlist .panel-body .extbutton");
+                        var span = tdiv.find(".cmdlist .panel-body .extbuttonspan");
+                        $.each(data, function (cmdinfoindex, cmdinfo) {
+                            var button = $('<button>');
+                            //$.alert(cmdinfo.displayName);
+                            button.text(cmdinfo.displayName);
+                            button.data("cmdid", cmdinfo.id);
+                            button.data("cid", cmdinfo.sockerServerConfig.configID);
+                            button.data("en", cmdinfo.enName);
+                            button.on("click", cmdbuttonClick);
+                            button.addClass("btn  col-xs-3 col-xs-offset-1 btn-lg cmdbutton");
+                            if (cmdinfo.css != undefined && cmdinfo != "") {
+                                button.addClass("btn-" + cmdinfo.css);
+                            }
+                            if (cmdinfo.extButton) {
+                                cmddivExt.append(button);
+                            } else {
+                                span.before(button);
+                                //cmddiv.append(button);
+                            }
+
+                        });
+                    }, "json");
+
+                    $.get(uri + "/m/listterminal", { uid: user, cid: n.configID }, function (data, status, xhr) {
+                        //debugger;
+                        $.merge(terminalList, data);
+                        //console.log(terminalList);
+                        $.each(data, function (ti, tinfo) {
+                            if (n.configID != tinfo.socketServerConfig.configID) {
+                                return;
+                            }
+                            console.log(tinfo);
+                            //$.alert("aa"+n.configID);
+                            var terminaldiv = $("#t_t_temp").clone();
+                            terminaldiv.attr("id", "terminaldiv_" + tinfo.id);
+                            terminaldiv.show();
+                            // $.alert(tinfo.terminalName);
+                            terminaldiv.find(".panel-heading .tname").html(tinfo.terminalName);
+                            terminaldiv.find(".panel-heading input").attr("id", "cb_" + tinfo.id);
+                            terminaldiv.find(".panel-heading input").attr('name', "check_cid_" + n.configID);
+                            terminaldiv.find(".panel-heading input").data('tid', tinfo.id);
+                            tdiv.find(".terminallist").append(terminaldiv);
+                            //debugger;
+                            var thdiv = $("<div>");
+                            thdiv.addClass("row");
+                            $.each(ths, function (i2, n2) {
+                                var head = $("<div>");
+                                var value = $("<div>");
+                                head.data("typename", n2).html(n2).addClass('col-xs-6');
+                                value.html('---').addClass('col-xs-6');
+                                value.addClass('datacoloum');
+                                thdiv.append(head);
+                                thdiv.append(value);
+                            });
+                            terminaldiv.find(".panel-body").append(thdiv);
+
+                            var $tr = $("<tr>");
+                            $tr.append($("<td>").html(tinfo.id));
+                            $tr.append($("<td>").html(tinfo.terminalName));
+                            $tr.append($("<td>").html(tinfo.socketServerConfig.configName));
+
+                            var $ctd = $("<td>");
+                            var $updatebtn = $("<button>");
+                            $updatebtn.click(updatebtn);
+                            $updatebtn.data("tid", tinfo.id);
+                            $updatebtn.html("修改");
+                            $ctd.append($updatebtn);
+
+
+
+                            var $delbtn = $("<button>");
+                            $delbtn.click(delbtn);
+                            $delbtn.data("tid", tinfo.id);
+                            $delbtn.html("刪除");
+                            $ctd.append($delbtn);
+                            $tr.append($ctd);
+                            $("#tableterminallist").append($tr);
+
+                        });
+                    }, "json");
+
+                });
+
+                setInterval(realData, 1000);// 注意函数名没有引号和括弧！
+            }, "json");
+
+            function updatebtn() {
+                var $this = $(this);
+                var id = $this.data("tid");
+                var tinfo = null;
+                for (var tinfotemp in terminalList) {
+                    if (terminalList[tinfotemp].id == id) {
+                        tinfo = terminalList[tinfotemp];
+                        break;
+                    }
+                }
+                if (tinfo != null) {
+                    var terminalinfoform = $("#terminalinfoform");
+                    $("#config_li_" + tinfo.socketServerConfig.configID).find("a").click();
+                    $("#tname").val(tinfo.terminalName);
+                    $("#sn").val(tinfo.sn);
+                    $("#terminal_id_update").val(tinfo.id);
+                    $("#add_terminal_btn").html("修改");
+                    //                    $("#configbtn").data("confidId", selectconfig);
+                }
+            }
+
+            function delbtn() {
+                $.confirm({
+                    title: '确认刪除？',
+                    content: '刪除后数据将一并删除，重新添加也无法找回以前的数据',
+                    buttons: {
+                        confirm: function () {
+                            var $this = $(this);
+                            var id = $this.data("tid");
+                            $.get(uri + "/m/delterminal", { id: id }, function (data, status, xhr) {
+                                $.alert(data.returnMessage);
+                            });
+                        },
+                        cancel: function () {
+                            //$.alert('Canceled!')
+                        }
+                    }
+
+                });
+            }
+
+            function hrefclick() {
+                var $this = $(this);
+                selectconfig = $this.data("confidId");
+                $("#configbtn").html($this.data("configName") + ' <span class="caret"></span>');
+                $("#configbtn").data("confidId", selectconfig);
+            }
+
+            $("#taskcountlist li a").on("click", function () {
+                $("#taskcount").val($(this).html());
+            });
+
+
+
+            window.addTerminal = function () {
+                var type = $("#add_terminal_btn").html();
+                $.confirm({
+                    title: '确认' + type + '？',
+                    content: '请确认名称和SN的值',
+                    buttons: {
+                        confirm: function () {
+                            var cid = $("#configbtn").data("confidId");
+                            var tname = $("#tname").val();
+                            var sn = $("#sn").val();
+                            var tid = $("#terminal_id_update").val();
+                            if (tname == "" || sn == "") {
+                                $.alert("不可为空");
+                                return;
+                            }
+                            if (type == "修改") {
+                                $.get(uri + "/m/updateterminal", { id: tid, name: tname, sn: sn }, function (data, status, xhr) {
+                                    $.alert(data.returnMessage);
+                                });
+                            } else {
+                                $.get(uri + "/m/addterminal", { uid: user, cid: cid, tname: tname, sn: sn }, function (data, status, xhr) {
+                                    $.alert(data.returnMessage);
+                                });
+                            }
+                            $("#add_terminal_btn").html("添加");
+
+                        },
+                        cancel: function () {
+                            //$.alert('Canceled!')
+                        }
+                    }
+
+                });
+            };
+
+            window.setTerminal = function () {
+                $.confirm({
+                    title: '开始配置？',
+                    content: '配置时间较长，请稍等！',
+                    buttons: {
+                        confirm: function () {
+                            var ssid = $("#ssid").val();
+                            var wifipassword = $("#wifipassword").val();
+                            var taskcount = $("#taskcount").val();
+                            if (ssid == "" || wifipassword == "") {
+                                $.alert("不可为空");
+                                return;
+                            }
+                            fishcarenjs.setWifi(ssid, wifipassword, taskcount);
+                        },
+                        cancel: function () {
+                            //$.alert('Canceled!')
+                        }
+                    }
+
+                });
+            }
+
+            fishcarenjs.cmdPageLoaded();
+        });
+
+        function setSettingValue(ssid) {
+            //$.alert(ssid);
+            $("#ssid").val(ssid);
+        };
+    </script>
+</body>
+
+</html>

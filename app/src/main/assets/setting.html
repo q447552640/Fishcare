@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>设备列表</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="jquery-confirm/jquery-confirm.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="container" id="maincontainer">
+        <h1 id="loading">正在读取设备列表...</h1>
+
+
+    </div>
+
+<select>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option> <option>5</option>
+
+</select>
+    <div class="container-fluid" id="t_temp" style="display:none">
+        <div class="page-header">
+            <h1>类型名称
+            </h1>
+        </div>
+        <div class="terminallist">
+
+        </div>
+
+        <div class="panel panel-info cmdlist">
+            <div class="panel-heading">
+                <h3 class="panel-title">操作
+                </h3>
+            </div>
+            <div class="panel-body">
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-primary terminal" id="t_t_temp" style="display:none">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <span class="tname">设备名称</span>&nbsp;-&nbsp;
+                <span>--</span>
+                <input type="checkbox" style="float:right;" />
+            </h3>
+        </div>
+        <div class="panel-body">
+        </div>
+    </div>
+
+
+    <script src="jquery/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="jquery-confirm/jquery-confirm.min.js"></script>
+
+    <script>
+        var uri = "";
+        var tidlist = {};
+        var configlist = {};
+
+
+        $(function () {
+
+            //方法二：
+            (function ($) {
+                $.getUrlParam = function (name) {
+                    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                    var r = window.location.search.substr(1).match(reg);
+                    if (r != null) return unescape(r[2]); return null;
+                }
+            })(jQuery);
+
+            //方法二：
+            var user = $.getUrlParam('user');
+            uri = $.getUrlParam('uri');
+
+            function cmdbuttonClick() {
+                var $this = $(this);
+                var cid = $this.data("cid");
+                var cmdid = $this.data("cmdid");
+                //var checked=$(document).find("input .check_cid_"+cid);
+                if ($('input[name="check_cid_' + 1 + '"]:checked').length < 1) {
+                    $.alert({
+                        title: '无选中的设备!',
+                        content: '没有设备被选中，无法操作，请先勾选设备！',
+                        confirm: function () {
+                            //$.alert('Confirmed!'); // shorthand.
+                        }
+                    });
+                    return;
+                }
+                $('input[name="check_cid_' + cid + '"]:checked').each(function () {
+                    $.get(uri + "/m/cmd", { id: $(this).data("tid"), cmd: cmdid }, function (data, status, xhr) {
+                        $.alert(data.returnMessage);
+                    });
+                });
+                //console.log(checked);
+                // console.log(cid);
+            };
+
+            function realData(){
+                alert("ready");
+            }
+            
+
+            //$.alert(uri);
+            $.get(uri + "/m/listserverconfig", function (data, status, xhr) {
+                //$.alert(uri + "/m/listserverconfig");
+                $("#loading").hide();
+                configlist = data;
+                $.each(configlist, function (i, n) {
+                    //$.alert("aa"+n.configID);
+                    var tdiv = $("#t_temp").clone();
+                    tdiv.show();
+                    tdiv.attr("id", "t_list" + n.configID);
+                    tdiv.find(".page-header h1").html(n.configName);
+                    var ths = n.terminalHPConfig.split(';');
+
+                    $("#maincontainer").append(tdiv);
+
+                    $.get(uri + "/m/listcmdbtn", { cid: n.configID }, function (data, status, xhr) {
+                        //console.log(data);
+
+                        var cmddiv = tdiv.find(".cmdlist .panel-body");
+                        $.each(data, function (cmdindex, cmdinfo) {
+                            var button = $('<button>');
+                            //$.alert(cmdinfo.displayName);
+                            button.text(cmdinfo.displayName);
+                            button.data("cmdid", cmdinfo.cmdindex);
+                            button.data("cid", cmdinfo.sockerServerConfig.configID);
+                            button.on("click", cmdbuttonClick);
+                            button.addClass("btn btn-primary col-xs-5");
+                            cmddiv.append(button);
+                        });
+                    }, "json");
+
+                    $.get(uri + "/m/listterminal", { uid: user, cid: n.configID }, function (data, status, xhr) {
+                        $.each(data, function (ti, tinfo) {
+                            if (n.configID != tinfo.socketServerConfig.configID) {
+                                return;
+                            }
+                            //console.log(tinfo);
+                            //$.alert("aa"+n.configID);
+                            var terminaldiv = $("#t_t_temp").clone();
+                            terminaldiv.attr("id", "terminaldiv_" + tinfo.id);
+                            terminaldiv.show();
+                            // $.alert(tinfo.terminalName);
+                            terminaldiv.find(".panel-heading .tname").html(tinfo.terminalName);
+                            terminaldiv.find(".panel-heading input").attr("id", "cb_" + tinfo.id);
+                            terminaldiv.find(".panel-heading input").attr('name', "check_cid_" + n.configID);
+                            terminaldiv.find(".panel-heading input").data('tid', tinfo.id);
+                            tdiv.find(".terminallist").append(terminaldiv);
+                            //debugger;
+                            var thdiv = $("<div>");
+                            thdiv.addClass("row");
+                            $.each(ths, function (i2, n2) {
+                                var head = $("<div>");
+                                var value = $("<div>");
+                                head.data("typename", n2).html(n2).addClass('col-xs-6');
+                                value.html('数据').addClass('col-xs-6');
+                                thdiv.append(head);
+                                thdiv.append(value);
+                            });
+                            terminaldiv.find(".panel-body").append(thdiv);
+                        });
+                    }, "json");
+
+                });
+
+                setInterval(realData,3000);// 注意函数名没有引号和括弧！
+
+            }, "json");
+
+
+            //alert(user);
+        });
+    </script>
+</body>
+
+</html>

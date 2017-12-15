@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">智能水族馆</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">邮箱或手机号</string>
+    <string name="prompt_password">密码</string>
+    <string name="action_sign_in">登陆</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_main">智能鱼缸</string>
+    <string name="title_home">设备</string>
+    <string name="title_dashboard">操作</string>
+    <string name="title_notifications">提醒</string>
+    <string name="action_register">注册</string>
+    <string name="title_activity_login">登陆</string>
+    <string name="error_field_required">用户名不可为空</string>
+</resources>

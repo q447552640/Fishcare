@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>添加新设备</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="jquery-confirm/jquery-confirm.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="container" id="maincontainer">
+        <div class="container-fluid" id="t_temp">
+            <div class="page-header">
+                <h1>配置新设备
+                </h1>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">路由器名称</span>
+                            <input id="ssid" type="text" class="form-control" aria-describedby="basic-addon1" readonly="readonly">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">路由器密码</span>
+                            <input id="wifipassword" type="text" class="form-control" placeholder="password" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">任务数</span>
+                            <input id="taskcount" type="text" class="form-control" aria-label="..." readonly="readonly" value="1">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">1
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right" id="taskcountlist">
+                                    <li>
+                                        <a href="#">1</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">2</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">3</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">4</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">5</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- /btn-group -->
+                        </div>
+                        <!-- /input-group -->
+                        <br/>
+                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="setTerminal()">开始配置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid" id="t_temp">
+            <div class="page-header">
+                <h1>添加新设备
+                </h1>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">设备类型</span>
+                            <div class="input-group-btn">
+                                <button id="configbtn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">1
+                                    <span class="caret"></span>
+                                </button>
+                                <ul id="configselect" class="dropdown-menu dropdown-menu-right">
+                                   
+                                </ul>
+                            </div>
+                            <!-- /btn-group -->
+                        </div>
+                        <!-- /input-group -->
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">名称</span>
+                            <input id="tname" type="text" class="form-control" placeholder="名称" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">SN</span>
+                            <input id="sn" type="text" class="form-control" placeholder="SN" aria-describedby="basic-addon1">
+                        </div>
+                        <br/>
+
+                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="addTerminal()">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="jquery/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="jquery-confirm/jquery-confirm.min.js"></script>
+
+    <script>
+        var uri = "http://120.77.247.25:8000";
+        var tidlist = {};
+        var configlist = {};
+        var selectconfig = -1;
+
+        $(function () {
+
+            //方法二：
+            (function ($) {
+                $.getUrlParam = function (name) {
+                    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                    var r = window.location.search.substr(1).match(reg);
+                    if (r != null) return unescape(r[2]); return null;
+                }
+            })(jQuery);
+
+            //方法二：
+            var user = $.getUrlParam('user');
+            //uri = $.getUrlParam('uri');
+
+            function hrefclick() {
+                var $this = $(this);
+                selectconfig = $this.data("confidId");
+                $("#configbtn").html($this.data("configName") + ' <span class="caret"></span>');
+                $("#configbtn").data("confidId",selectconfig);
+            }
+
+            $("#taskcountlist li a").on("click",function(){
+                $("#taskcount").val($(this).html());
+            });
+
+
+
+            window.addTerminal = function () {
+                $.confirm({
+                    title: '确认添加？',
+                    content: '请确认名称和SN的值',
+                    buttons: {
+                        confirm: function () {
+                            var cid=$("#configbtn").data("confidId");
+                            var tname=$("#tname").val();
+                            var sn=$("#sn").val();
+                            if(tname==""|| sn==""){
+                                $.alert("不可为空");
+                                return;
+                            }
+                            $.get(uri + "/m/addterminal",{uid:user,cid:cid,tname:tname,sn:sn}, function (data, status, xhr) {
+                                $.alert(data.returnMessage);
+                            });
+                        },
+                        cancel: function () {
+                            //$.alert('Canceled!')
+                        }
+                    }
+                   
+                });
+            };
+
+            window.setTerminal=function(){
+                $.confirm({
+                    title: '开始配置？',
+                    content: '配置时间较长，请稍等！',
+                    buttons: {
+                        confirm: function () {
+                            var ssid=$("#ssid").val();
+                            var wifipassword=$("#wifipassword").val();
+                            var taskcount=$("#taskcount").val();
+                            if(ssid==""||wifipassword==""){
+                                $.alert("不可为空");
+                                return;
+                            }
+                            fishcarenjs.setWifi(ssid,wifipassword,taskcount);
+                        },
+                        cancel: function () {
+                            //$.alert('Canceled!')
+                        }
+                    }
+                   
+                });
+            }
+
+            $.get(uri + "/m/listserverconfig", function (data, status, xhr) {
+                $("#configselect").empty();
+                $.each(data, function (i, n) {
+                    var $a = $("<a>");
+                    $a.data("confidId", n.configID);
+                    $a.data("configName", n.configName);
+                    $a.html(n.configName);
+                    $a.attr("href", "javascript:;");
+                    $a.click(hrefclick);
+                    $("#configselect").append($('<li>').append($a));
+                });
+                $("#configbtn").html($("#configselect").find("a").first().data("configName") + ' <span class="caret"></span>');
+                $("#configbtn").data("confidId",$("#configselect").find("a").first().data("confidId"));
+
+            }, "json");
+
+            fishcarenjs.cmdPageLoaded();
+        });
+
+        function setSettingValue(ssid){
+            //$.alert(ssid);
+            $("#ssid").val(ssid);
+        };
+
+
+
+    </script>
+</body>
+
+</html>
