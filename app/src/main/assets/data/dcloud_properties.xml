@@ -1,11 +1,15 @@
 <properties>
 	<features>
+		<feature name="esptouch" value="cn.net.wangsu.fishcare.birdges.ESPTouchJsBridge" />
+		<feature
+			name="plugintest"
+			value="com.example.H5PlusPlugin.PGPlugintest" />
 		<feature name="Barcode" value="io.dcloud.feature.barcode.BarcodeFeatureImpl"/>
 		<feature name="Speech" value="io.dcloud.feature.speech.SpeechFeatureImpl">
 			<module name="iFly" value="io.dcloud.feature.speech.IflySpeechEngine"/>
 		</feature>
 		<feature name="Maps" value="io.dcloud.js.map.amap.JsMapPluginImpl"/>
-        <!--<feature name="Maps" value="io.dcloud.js.map.JsMapPluginImpl"/>-->
+		<!--<feature name="Maps" value="io.dcloud.js.map.JsMapPluginImpl"/>-->
 		<feature name="Contacts" value="io.dcloud.feature.contacts.ContactsFeatureImpl"/>
 		<feature name="Messaging" value="io.dcloud.adapter.messaging.MessagingPluginImpl"/>
 		<feature name="Camera" value="io.dcloud.js.camera.CameraFeatureImpl"/>
@@ -35,7 +39,7 @@
 		<feature name="Statistic" value="io.dcloud.feature.statistics.StatisticsFeatureImpl"/>
 		<feature name="Accelerometer" value="io.dcloud.feature.sensor.AccelerometerFeatureImpl"/>
 		<feature name="Orientation" value="io.dcloud.feature.sensor.OrientationFeatureImpl"/>
-		<feature name="NativeObj" value="io.dcloud.feature.nativeObj.FeatureImpl"/>		
+		<feature name="NativeObj" value="io.dcloud.feature.nativeObj.FeatureImpl"/>
 		<feature name="Geolocation" value="io.dcloud.js.geolocation.GeolocationFeatureImpl"/>
 		<feature name="Payment" value="io.dcloud.feature.payment.PaymentFeatureImpl">
 			<module name="AliPay" value="io.dcloud.feature.payment.alipay.AliPay"/>
@@ -55,15 +59,13 @@
 			<module name="OAuth-MiUi" value="io.dcloud.feature.oauth.miui.MiUiOAuthService"/>
 		</feature>
 		<feature name="Stream" value="io.dcloud.appstream.js.StreamAppFeatureImpl"/>
-		<feature
-            name="plugintest"
-            value="com.example.H5PlusPlugin.PGPlugintest" />
-	</features>	
+
+	</features>
 
 	<services>
 		<service name="push" value="io.dcloud.feature.aps.APSFeatureImpl"/>
 		<service name="Statistic" value="io.dcloud.feature.statistics.StatisticsBootImpl"/>
 		<service name="Downloader" value="io.dcloud.net.DownloaderBootImpl"/>
-        <!--<service name="Maps" value="io.dcloud.js.map.MapInitImpl"/>-->
+		<!--<service name="Maps" value="io.dcloud.js.map.MapInitImpl"/>-->
 	</services>
 </properties>

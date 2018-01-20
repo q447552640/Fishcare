@@ -5,10 +5,10 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "cn.net.wangsu.fishcare"
-        minSdkVersion 19
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 14
+        targetSdkVersion 26
+        versionCode 10000
+        versionName "1.0.0"
         multiDexEnabled true
     }
     buildTypes {

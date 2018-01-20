@@ -71,13 +71,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:name="cn.net.wangsu.fishcare.HApplication"
         android:supportsRtl="true">
+        <meta-data
+            android:name="immersed.status.bar"
+            android:value="true"/>
         <activity
             android:name="com.HBuilder.integrate.SDK_WebApp"
             android:configChanges="orientation|keyboardHidden|screenSize|keyboard|navigation|mcc|mnc|fontScale"
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:screenOrientation="user"
-            android:theme="@style/DCloudTheme"
+            android:theme="@style/TranslucentTheme"
             android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
