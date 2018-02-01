@@ -4,6 +4,7 @@
 		<feature
 			name="plugintest"
 			value="com.example.H5PlusPlugin.PGPlugintest" />
+		<feature name="notification" value="cn.net.wangsu.fishcare.birdges.Notify" />
 		<feature name="Barcode" value="io.dcloud.feature.barcode.BarcodeFeatureImpl"/>
 		<feature name="Speech" value="io.dcloud.feature.speech.SpeechFeatureImpl">
 			<module name="iFly" value="io.dcloud.feature.speech.IflySpeechEngine"/>
