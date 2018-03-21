@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/Constant.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/DateUtil.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/FishcareBackService.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/LoginConfig.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/Notice.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XMPPService.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppConnecionListener.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppConnection.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppConnectionManager.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppMessageInterceptor.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppMessageListener.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppPresenceInterceptor.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/cn/net/wangsu/fishcare/xmpp/XmppPresenceListener.java" charset="GBK" />
+  </component>
+</project>

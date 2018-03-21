@@ -97,7 +97,10 @@ public class ESPTouchJsBridge extends StandardFeature {
             if (wifiSetCallBackID != null) {
                 if (result.isSuc()) {
                     JSONArray newArray = new JSONArray();
-                    newArray.put(result.getBssid());
+                    String regex = "(.{2})";
+                    String mac= result.getBssid().replaceAll (regex, "$1:");
+                    mac=mac.substring(0,mac.length()-1);
+                    newArray.put(mac);
                     newArray.put(result.getInetAddress());
                     JSUtil.execCallback(wifiWebView, wifiSetCallBackID, newArray, JSUtil.OK, false);
                 } else {
