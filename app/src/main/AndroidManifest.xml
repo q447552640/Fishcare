@@ -114,7 +114,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name="cn.net.wangsu.fishcare.xmpp.XMPPService"></service>
         <!-- 系统消息服务 -->
         <service android:name="cn.net.wangsu.fishcare.xmpp.FishcareBackService"></service>
 

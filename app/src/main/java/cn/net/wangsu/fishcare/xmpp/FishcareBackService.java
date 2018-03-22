@@ -1,101 +1,94 @@
 package cn.net.wangsu.fishcare.xmpp;
 
 
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
-
+import org.json.JSONException;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.Map;
+
 import cn.net.wangsu.fishcare.R;
+import cn.net.wangsu.fishcare.receivers.XMPPReceiver;
+import cn.net.wangsu.fishcare.util.JSONUtil;
 
 public class FishcareBackService extends Service {
 
     LoginConfig loginconfig;
     XMPPTCPConnection connection;
-    NotificationManager nManager;
-    Notification notification;
-    private PendingIntent pIntent;
-    ProgressDialog pd;
-    private ContacterReceiver receiver = null;
     private boolean loginSuccess = false;
     public SimpleBinder sBinder;
 
-    private static String username;
-    private static String password;
+    private Handler mHandler = new MyHandler();
+    private NotificationManager nManager;
 
-    public static String getUsername() {
-        return username;
-    }
-
-    public static void setUsername(String username) {
-        FishcareBackService.username = username;
-    }
-
-    public static String getPassword() {
-        return password;
-    }
-
-    public static void setPassword(String password) {
-        FishcareBackService.password = password;
-    }
+    private static Ringtone ringtone = null;
 
     @Override
     public void onCreate() {
-        // TODO Auto-generated method stub
         super.onCreate();
         sBinder = new SimpleBinder();
+        nManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
     }
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
-        if (receiver != null) {
-            unregisterReceiver(receiver);
-        }
+        XmppConnectionManager.getInstance().getConnection().removeSyncStanzaListener(stanzaListener);
         stopSelf();
         super.onDestroy();
     }
 
     @Override
     public void onLowMemory() {
-        // TODO Auto-generated method stub
-        //super.onLowMemory();
+        super.onLowMemory();
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
-        nManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
-        initNotification();
-        String username= intent.getStringExtra("username");
-        String password= intent.getStringExtra("password");
+        String username="";
+        String password="";
+        if(intent!=null){
+            username = intent.getStringExtra("username");
+            password = intent.getStringExtra("password");
+        }
+        if(username==null || "".equals(username)){
+            SharedPreferences settings = getSharedPreferences("fishcare", 0);
+            username=settings.getString("username","");
+            password=settings.getString("password","");
+        }
         loginconfig = new LoginConfig();
         loginconfig.setXmppHost("192.168.2.139");
         loginconfig.setXmppPort(9090);
-        loginconfig.setXmppServiceName("www.booway.raojianhui.com");
+        loginconfig.setXmppServiceName("app.aqualexcel.cn");
         loginconfig.setUsername(username);
         loginconfig.setPassword(password);
         loginconfig.setNovisible(false);
-/*				pd = new ProgressDialog(FishcareBackService.this);
-                pd.setTitle("请稍等");
-				pd.setMessage("正在登录...");
-				pd.show();*/
         new MyThread().start();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -107,17 +100,8 @@ public class FishcareBackService extends Service {
      * @author newcj
      */
     public class SimpleBinder extends Binder {
-        /**
-         * 获取 Service 实例
-         *
-         * @return
-         */
         public FishcareBackService getService() {
             return FishcareBackService.this;
-        }
-
-        public int add(int a, int b) {
-            return a + b;
         }
 
         public boolean getLoginResult() {
@@ -127,68 +111,34 @@ public class FishcareBackService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // 返回 SimpleBinder 对象
         return sBinder;
     }
 
     public class MyThread extends Thread {
         public void run() {
-            //	while (!Thread.currentThread().isInterrupted()) {
             Message msg = new Message();
             msg.what = login(loginconfig);
             mHandler.sendMessage(msg);
-                /*
-				 * try { Thread.sleep(1000); } catch (InterruptedException e) {
-				 * e.printStackTrace(); }
-				 */
-            //	}
         }
     }
 
-
-    private void initNotification() {
-        // 显示时间
-        long when = System.currentTimeMillis();
-        notification = new Notification();
-        notification.icon = R.drawable.icon;// 设置通知的图标
-        //notification.tickerText = tickerText; // 显示在状态栏中的文字
-        notification.when = when; // 设置来通知时的时间
-        //notification.sound = Uri.parse("android.resource://com.sun.alex/raw/dida"); // 自定义声音
-        //	notification.flags = Notification.FLAG_NO_CLEAR; // 点击清除按钮时就会清除消息通知,但是点击通知栏的通知时不会消失
-        //	notification.flags = Notification.FLAG_ONGOING_EVENT; // 点击清除按钮不会清除消息通知,可以用来表示在正在运行
-        notification.flags |= Notification.FLAG_AUTO_CANCEL; // 点击清除按钮或点击通知后会自动消失
-        //	notification.flags |= Notification.FLAG_INSISTENT; // 一直进行，比如音乐一直播放，知道用户响应
-        notification.defaults = Notification.DEFAULT_SOUND; // 调用系统自带声音
-        //	notification.defaults = Notification.DEFAULT_VIBRATE;// 设置默认震动
-        //	notification.defaults = Notification.DEFAULT_ALL; // 设置铃声震动
-        //	notification.defaults = Notification.DEFAULT_ALL; // 把所有的属性设置成默认
-
-    }
-
-    private class MyHandler extends Handler{
+    private class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            //	pd.dismiss();
             switch (msg.what) {
                 case Constant.LOGIN_SECCESS: // 登录成功
-                    Toast.makeText(FishcareBackService.this, "登陆成功", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(FishcareBackService.this, "登陆成功", Toast.LENGTH_SHORT).show();
                     // 系统消息连接服务
-                    Intent imSystemMsgService = new Intent(FishcareBackService.this,
-                            XMPPService.class);
-                    FishcareBackService.this.startService(imSystemMsgService);
-                    // 初始化广播
-                    receiver = new ContacterReceiver();
-
-                    // 注册广播接收器
-                    IntentFilter filter = new IntentFilter();
-                    // 好友请求
-                    filter.addAction(Constant.ROSTER_SUBSCRIPTION);
-                    filter.addAction(Constant.NEW_MESSAGE_ACTION);
-                    filter.addAction(Constant.ACTION_SYS_MSG);
-
-                    filter.addAction(Constant.ACTION_RECONNECT_STATE);
-                    registerReceiver(receiver, filter);
+//                    Intent imSystemMsgService = new Intent(FishcareBackService.this,
+//                            XMPPService.class);
+//                    FishcareBackService.this.startService(imSystemMsgService);
+//                    // 注册广播接收器
+//                    IntentFilter filter = new IntentFilter();
+//                    // 好友请求
+//                    filter.addAction(Constant.ROSTER_SUBSCRIPTION);
+//                    filter.addAction(Constant.NEW_MESSAGE_ACTION);
+//                    filter.addAction(Constant.ACTION_SYS_MSG);
+//                    filter.addAction(Constant.ACTION_RECONNECT_STATE);
                     break;
                 case Constant.LOGIN_ERROR_ACCOUNT_PASS:// 账户或者密码错误
                     Toast.makeText(FishcareBackService.this, "账户或者密码错误",
@@ -209,21 +159,113 @@ public class FishcareBackService extends Service {
         }
     }
 
+    private StanzaListener stanzaListener = new StanzaListener() {
+        @Override
+        public void processStanza(Stanza stanza) throws SmackException.NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
+            if (stanza instanceof org.jivesoftware.smack.packet.Message) {//表示接收到是消息包
+                org.jivesoftware.smack.packet.Message message = (org.jivesoftware.smack.packet.Message) stanza;
+                if (message.getType() == org.jivesoftware.smack.packet.Message.Type.normal || message.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {//表示单聊
+                    Notice notice = new Notice();
+                    startAlarm();
 
-   private Handler mHandler = new MyHandler();
+                    notice.setTitle("系统消息");
+                    notice.setNoticeType(Notice.SYS_MSG);
+                    notice.setFrom(stanza.getFrom().toString());
+                    notice.setContent(message.getBody());
+                    notice.setNoticeTime(DateUtil.date2Str(Calendar.getInstance(),
+                            Constant.MS_FORMART));
+                    notice.setStatus(Notice.UNREAD);
+
+                    Intent intent = new Intent();
+                    intent.setAction(Constant.ACTION_SYS_MSG);
+                    intent.putExtra("notice", notice);
+                    sendBroadcast(intent);
+
+                    String messageBodyStr = message.getBody();
+                    Map<String, String> map = null;
+                    if (!"".equals(messageBodyStr)) {
+                        try {
+                            map = JSONUtil.toMap(messageBodyStr);
+                        } catch (JSONException e) {
+                            map = null;
+                        }
+                    }
+
+                    String ticker = "消息";
+                    String title = "系统消息";
+                    String contentText = message.getBody();
+                    if (map != null) {
+                        ticker = map.get("ticker");
+                        title = map.get("title");
+                        contentText = map.get("message");
+                    }
+                    showNotification(FishcareBackService.this, ticker, title, contentText);
+
+                }
+//                if (message.getType() == Message.Type.chat) {//表示单聊
+//
+//                }
+//                if (message.getType() == Message.Type.groupchat) {//表示群聊
+//
+//                }
+//                if (message.getType() == Message.Type.error) {//表示错误信息
+//
+//                }
+            }
+
+//            if (stanza instanceof Presence) {//表示接收到的是Presence包
+//
+//            }
+//
+//            if (stanza instanceof IQ) {//表示接收到的是IQ包
+//
+//            }
+        }
+
+    };
+
 
     // 登录
     private Integer login(LoginConfig loginConfig) {
+
+        boolean userChanged = false;
+
+        SharedPreferences settings = getSharedPreferences("fishcare", 0);
+
+        String oldUserName=settings.getString("username","");
+
+        if(oldUserName!=null || !"".equals(oldUserName)){
+            if(!loginConfig.getUsername().equals(oldUserName)){
+                userChanged=true;
+            }
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("username", loginConfig.getUsername());
+        editor.putString("password",loginConfig.getPassword());
+        editor.commit();
+
+        String username=settings.getString("username","");
+        String password=settings.getString("password","");
+
+        if (connection != null && connection.isConnected()) {
+            if(userChanged){
+                connection.disconnect();
+            }else{
+                return Constant.ALREADY_LOGIN;
+            }
+
+        }
         XmppConnectionManager.getInstance().init(loginConfig);
-        String username = loginConfig.getUsername();
-        String password = loginConfig.getPassword();
         try {
             connection = XmppConnectionManager.getInstance().getConnection();
-//            connection.connect();
+            connection.addSyncStanzaListener(stanzaListener, new StanzaFilter() {
+                @Override
+                public boolean accept(Stanza stanza) {
+                    return true;
+                }
+            });
             connection.login(username, password); // 登录
-            // OfflineMsgManager.getInstance(activitySupport).dealOfflineMsg(connection);//处理离线消息
-//            loginConfig.setUsername(username);
-//            loginConfig.setPassword(password);
             loginConfig.setOnline(true);
             return Constant.LOGIN_SECCESS;
         } catch (Exception xee) {
@@ -249,42 +291,93 @@ public class FishcareBackService extends Service {
         }
     }
 
-    private class ContacterReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (Constant.ROSTER_SUBSCRIPTION.equals(action)) {
-                // adapter.notifyDataSetChanged();
-            } else if (Constant.NEW_MESSAGE_ACTION.equals(action)) {
-                // 添加小气泡
-                // adapter.notifyDataSetChanged();
-            } else if (Constant.ACTION_RECONNECT_STATE.equals(action)) {
-                // boolean isSuccess = intent.getBooleanExtra(
-                // Constant.RECONNECT_STATE, false);
-                // handReConnect(isSuccess);
-            } else if (Constant.ACTION_SYS_MSG.equals(action)) {
-                // adapter.notifyDataSetChanged();
-				/*Notice no = new Notice();
-		//		no = intent.getParcelableExtra("notice");
-				no = (Notice) intent.getSerializableExtra("notice");
-				if(no != null){
-				//	tv.setText(no.getContent());
-				}
-				notification.tickerText = no.getContent();
-				// 单击通知后会跳转到NotificationResult类  
-	            intent = new Intent(FishcareBackService.this,
-	                    MainActivity.class);  
-	            // 获取PendingIntent,点击时发送该Intent  
-	            pIntent = PendingIntent.getActivity(FishcareBackService.this, 0,
-	                    intent, 0);  
-	            // 设置通知的标题和内容  
-	            notification.setLatestEventInfo(FishcareBackService.this, "标题",
-	                    "内容", pIntent);  
-	            // 发出通知  
-	            nManager.notify(0, notification); */
-            }
-
+    private void setRingtoneRepeat(Ringtone ringtone) {
+        Class<Ringtone> clazz = Ringtone.class;
+        try {
+            Field field = clazz.getDeclaredField("mLocalPlayer");//返回一个 Field 对象，它反映此 Class 对象所表示的类或接口的指定公共成员字段（※这里要进源码查看属性字段）
+            field.setAccessible(true);
+            MediaPlayer target = (MediaPlayer) field.get(ringtone);//返回指定对象上此 Field 表示的字段的值
+            target.setLooping(true);//设置循环
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
+
+    public void startAlarm() {
+
+        if (ringtone == null) {//mMediaPlayer == null) {
+            Uri soundUri = getSystemDefultRingtoneUri();
+
+            ringtone = RingtoneManager.getRingtone(this, soundUri);
+            setRingtoneRepeat(ringtone);
+        }
+        if (!ringtone.isPlaying()) {
+            ringtone.play();
+        }
+    }
+
+    public static void stopAlarm() {
+        if (ringtone != null && ringtone.isPlaying())
+            ringtone.stop();
+    }
+
+    private Uri getSystemDefultRingtoneUri() {
+        return RingtoneManager.getActualDefaultRingtoneUri(this,
+                RingtoneManager.TYPE_ALARM);
+    }
+
+    public void showNotification(Context context, String ticker, String title, String contentText) {
+
+        long[] pattern = {0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 500};
+
+        Intent intentClick = new Intent(this, XMPPReceiver.class);
+        intentClick.setAction("notification_clicked");
+        intentClick.putExtra(XMPPReceiver.TYPE, 1);
+        PendingIntent pendingIntentClick = PendingIntent.getBroadcast(this, 0, intentClick, PendingIntent.FLAG_ONE_SHOT);
+
+        Intent intentCancel = new Intent(this, XMPPReceiver.class);
+        intentCancel.setAction("notification_cancelled");
+        intentCancel.putExtra(XMPPReceiver.TYPE, 2);
+        PendingIntent pendingIntentCancel = PendingIntent.getBroadcast(this, 0, intentCancel, PendingIntent.FLAG_ONE_SHOT);
+
+
+//        Intent clickIntent = new Intent(context, XMPPReceiver.class); //点击通知之后要发送的广播
+//        int id = (int) (System.currentTimeMillis() / 1000);
+//        PendingIntent contentIntent = PendingIntent.getBroadcast(this.getApplicationContext(), id, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification notification = new NotificationCompat.Builder(context, null)
+                /**设置通知左边的大图标**/
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
+                /**设置通知右边的小图标**/
+                .setSmallIcon(R.mipmap.ic_launcher)
+                /**通知首次出现在通知栏，带上升动画效果的**/
+                .setTicker(ticker)
+                /**设置通知的标题**/
+                .setContentTitle(title)
+                /**设置通知的内容**/
+                .setContentText(contentText)
+                /**通知产生的时间，会在通知信息里显示**/
+                .setWhen(System.currentTimeMillis())
+                /**设置该通知优先级**/
+                .setPriority(NotificationManager.IMPORTANCE_MAX)
+                /**设置这个标志当用户单击面板就可以让通知将自动取消**/
+                .setAutoCancel(true)
+                /**设置他为一个正在进行的通知。他们通常是用来表示一个后台任务,用户积极参与(如播放音乐)或以某种方式正在等待,因此占用设备(如一个文件下载,同步操作,主动网络连接)**/
+                .setOngoing(false)
+                /**向通知添加声音、闪灯和振动效果的最简单、最一致的方式是使用当前的用户默认设置，使用defaults属性，可以组合：**/
+                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)
+                .setContentIntent(pendingIntentClick)//PendingIntent.getActivity(context, 1, new Intent(context,SDK_WebApp.class), PendingIntent.FLAG_CANCEL_CURRENT))
+                .setDeleteIntent(pendingIntentCancel)
+                .setVibrate(pattern)//震动
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .build();
+
+        /**发起通知**/
+        nManager.notify(0, notification);
+    }
+
 }

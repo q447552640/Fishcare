@@ -48,14 +48,14 @@ public class XmppConnectionManager {
                             .setCompressionEnabled(false) // 禁用SSL连接
                             //.setSendPresence(false) // 设置为离线状态
                             .setDebuggerEnabled(true) // 开启调试模式
+                            .setSendPresence(true)
                             .build();
             // 设置需要经过同意才可以添加好友
-            Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.manual);
+            Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.accept_all);
             XMPPTCPConnection connection = new XMPPTCPConnection(configuration);
             connection.connect();// 连接, 可设置监听
             ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(connection);
             reconnectionManager.enableAutomaticReconnection();
-            //connection.addConnectionListener(new XMPPConnectionListener());
             this.mConnection = connection;
         } catch (UnknownHostException e) {
             e.printStackTrace();

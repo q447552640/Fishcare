@@ -67,6 +67,7 @@ public class Constant {
 	public static final int LOGIN_ERROR_ACCOUNT_PASS = 3;// 账号或者密码错误
 	public static final int SERVER_UNAVAILABLE = 4;// 无法连接到服务器
 	public static final int LOGIN_ERROR = 5;// 连接失败
+	public static final int ALREADY_LOGIN=6;//已经连接，重复调用
 
 	public static final String XMPP_CONNECTION_CLOSED = "xmpp_connection_closed";// 连接中断
 

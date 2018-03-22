@@ -7,7 +7,7 @@ import android.content.Intent;
 
 import com.HBuilder.integrate.SDK_WebApp;
 
-import cn.net.wangsu.fishcare.xmpp.XMPPService;
+import cn.net.wangsu.fishcare.xmpp.FishcareBackService;
 
 /**
  * Created by lorytech on 2018/3/20.
@@ -18,7 +18,7 @@ public class XMPPReceiver extends BroadcastReceiver {
     public static final String TYPE = "XMPPNotice"; //这个type是为了Notification更新信息的，这个不明白的朋友可以去搜搜，很多
     @Override
     public void onReceive(Context context, Intent intent) {
-        XMPPService.stopAlarm();
+        FishcareBackService.stopAlarm();
 
         String action = intent.getAction();
         int type = intent.getIntExtra(TYPE, -1);
