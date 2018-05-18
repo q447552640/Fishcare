@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "cn.net.wangsu.fishcare"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 10008
-        versionName "1.0.8"
+        versionCode 10009
+        versionName "1.0.9"
         multiDexEnabled true
     }
     buildTypes {
@@ -23,9 +23,9 @@ dependencies {
     configurations {
         all*.exclude group: "xpp3", module:"xpp3"
     }
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile "org.igniterealtime.smack:smack-android:4.2.3"
-    compile "org.igniterealtime.smack:smack-tcp:4.2.3"
+    implementation "org.igniterealtime.smack:smack-android:4.2.3"
+    implementation "org.igniterealtime.smack:smack-tcp:4.2.3"
 }

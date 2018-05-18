@@ -106,6 +106,7 @@ public class ESPTouchJsBridge extends StandardFeature {
                 } else {
                     JSONArray newArray = new JSONArray();
                     if (result.isCancelled()) {
+
                         newArray.put("用户取消了操作。");
                     } else {
                         newArray.put("未知错误。");
